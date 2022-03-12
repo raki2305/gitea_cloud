@@ -13,7 +13,7 @@ terraform init
 terraform apply
 ``` 
 
-...and with `terraform destroy`.
+...and with `terraform destroy` you can delete your resources.
 
 Enjoy :blush: !
 
