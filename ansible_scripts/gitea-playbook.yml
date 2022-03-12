@@ -1,0 +1,141 @@
+---
+- name: Run Gitea and Jenkins
+  hosts: all:!localhost # IP or host will be specified over cli
+  remote_user: <INSERT_USER_TO_USE> # Remote-User to use
+  become: yes
+  become_method: sudo
+
+
+  tasks:
+    - name: Install apt-transport-https
+      apt:
+        name: apt-transport-https
+        update_cache: yes
+
+    - name: Install sqlite3
+      apt:
+        name: sqlite3
+        state: present
+        update_cache: yes
+    
+    - name: Install git
+      apt:
+        name: git
+        state: present
+        update_cache: yes
+    
+    - name: Create Git-User
+      ansible.builtin.user:
+        system: yes
+        shell: /bin/bash
+        comment: Git Version Control
+        group:
+        home: /home/git
+        name: git # Username
+    
+    - name: Download Gitea
+      get_url:
+        url: https://dl.gitea.io/gitea/1.14.1/gitea-1.14.1-linux-amd64
+        dest: /tmp/gitea
+    
+    - name: Check gitea download
+      stat: 
+        path: /tmp/gitea
+      register: giteafile_stat
+    
+    - name: Move Gitea Binary to bin
+      command: sudo mv /tmp/gitea /usr/local/bin
+      when: giteafile_stat.stat.exists
+    
+    - name: Make Gitea executeable
+      file:
+        path: /usr/local/bin/gitea
+        mode: +x
+    
+    - name: Create directories for Gitea
+      file:
+        path: /var/lib/gitea/{{ item.dir }}
+        state: directory
+      loop:
+        - { dir: custom }
+        - { dir: data }
+        - { dir: log }
+    
+    - name: Create directories for Gitea
+      file:
+        path: /etc/gitea
+        state: directory
+    
+    - name: Assign Gitea lib-Ordner to git-User
+      file:
+        path: /var/lib/gitea
+        state: directory
+        recurse: yes
+        group: git
+        owner: git
+        mode: '750'
+    
+    - name: Assign Gitea etc-Directory to User
+      file:
+        path: /etc/gitea
+        state: directory
+        recurse: yes
+        group: git
+        owner: git
+        mode: '770'
+    
+    - name: Download service-file 
+      get_url:
+        url: https://raw.githubusercontent.com/go-gitea/gitea/main/contrib/systemd/gitea.service
+        dest: /tmp/
+    
+    - name: Move service-file to system
+      command: sudo mv /tmp/gitea.service /etc/systemd/system
+    
+    - name: Starte Gitea-Service
+      systemd:
+        daemon_reload: yes
+        state: started
+        name: gitea
+        enabled: yes
+    
+    - name: Fetch Service Status
+      service_facts:
+
+    - name: Check Gitea 
+      debug:
+        var: ansible_facts.services["gitea.service"]
+    
+    - name: Install Java
+      apt:
+        name: openjdk-11-jre
+    
+    - name: Get Apt Key for Jenkins
+      apt_key:
+        url: https://pkg.jenkins.io/debian-stable/jenkins.io.key
+        state: present
+    
+    - name: Edit APT-Repo Config.
+      apt_repository:
+        repo: 'deb https://pkg.jenkins.io/debian-stable binary/'
+        state: present
+    
+    - name: Install Jenkins
+      apt:
+        name: jenkins
+        update_cache: yes
+    
+    - name: Start Jenkins
+      service:
+        name: jenkins
+        state: started
+
+
+  
+
+
+
+
+    
+
+
