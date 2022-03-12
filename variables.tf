@@ -14,7 +14,7 @@ variable "project" {
   default = "YOUR_GCP_PROJECT_NAME"
 }
 
-variable "zone" {
+variable "region" {
   default = "GCP_REGION_TO_BE_USED" # Example: "europe-west2-b"
 }
 
