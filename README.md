@@ -1,4 +1,4 @@
-# Use Ansible and Terraform to install Gitea on GCP
+# Using Ansible and Terraform to install Gitea on GCP
 With the provided scripts in this Repo you will be able to install Gitea on a Google Cloud Compute Engine (VM).
 
 To use the scripts successfully, please adjust the variables.tf and gitea-playbook.yml files accordingly. 
